@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link crossorigin="anonymous"
+          href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+          integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
+          rel="stylesheet">
+    <title>Chess on JavaScript</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+            src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+            src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/circles.js@0.0.6/circles.min.js"></script>
+    <script crossorigin="anonymous"
+            integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+            src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+    <script src="/img/chess.js"></script>
+    <style>
+        /* New colors for the chessboard */
+        .white-1e1d7 {
+            background-color: #E8EDF9;
+            background-size: 14px 14px;
+        }
+
+        .black-3c85d {
+            background-color: #B7C0D8;
+            background-size: 14px 14px;
+        }
+
+        .board-b72b1 {
+            border: 0px solid #404040;
+            box-sizing: content-box;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 10px;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: 0px 4px 25px -3px rgba(0, 0, 0, 0.2);
+            width: 100%;
+
+        }
+
+        .highlight {
+            width: 40%;
+            height: 40%;
+            opacity: 50%;
+            border-radius: 50%;
+            background-color: #7B61FF;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* This ensures that the circle doesn't interfere with dragging */
+        }
+
+        .highlight1-32417, .highlight2-9c5d2 {
+            background-color: #7B61FF;
+            opacity: 50%;
+            background-size: 14px 14px;
+            box-shadow: inset 0 0 3px 3px #7B61FF;
+        }
+
+        body {
+            font-family: "Inter", sans-serif; /* Apply Inter font to the whole body */
+            background-image: url("/img/Ellipse 1.png");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 80px;
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        #timer {
+            font-size: 24px;
+            font-weight: normal;
+            margin-bottom: 10px; /* Add a margin below the timer */
+        }
+
+        .add-time-button {
+            padding: 6px 16px;
+            font-size: 14px;
+            font-family: "Inter", sans-serif; /* Apply Inter font to the button */
+            background-color: #D3D2DC; /* Set button background color */
+            color: black;
+            border: none;
+            border-radius: 20px; /* Make the button rounded */
+            cursor: pointer;
+        }
+
+
+        .add-time-button.disabled {
+            background-color: #7e7e7e;
+            cursor: not-allowed;
+        }
+
+        .bottom-button.disabled {
+            background-color: #7e7e7e;
+            cursor: not-allowed;
+        }
+
+        .head-container {
+            padding-top: 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin: 10px;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100px; /* Можно оставить фиксированную ширину для .player-info */
+            height: 80px; /* Задайте фиксированную высоту для .player-info */
+            transition: all ease-in-out 700ms;
+            border-radius: 10px;
+            overflow: auto;
+        }
+
+        .player-info.play {
+            background-color: rgba(171, 154, 255, 0.45);
+            scale: 105%;
+        }
+
+        .bottom-buttons {
+            display: flex;
+            justify-content: center; /* Position the buttons fixed at the bottom */
+            bottom: 6%; /* Adjust the bottom offset as needed */
+            width: 100%;
+        }
+
+        .bottom-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none; /* Make the button fully circular */
+            background-color: #D3D2DC; /* Set button background color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+        }
+
+        .bottom-button img {
+            width: 50%; /* Adjust image size as needed */
+            height: 50%;
+            margin: auto;
+            text-align: center;
+            object-fit: cover;
+        }
+
+        article {
+            width: 100%;
+            min-width: 90%;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 0.75rem;
+            box-sizing: border-box;
+            font-weight: bold; /* добавьте этот стиль */
+        }
+
+        h1 {
+            font-weight: 900;
+            text-align: center;
+            font-size: 1.5rem;
+            line-height: 1.125;
+        }
+
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .lds-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 8px solid #7b61ff;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: #7b61ff transparent transparent transparent;
+        }
+
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            min-height: 30px;
+            width: 560px;
+            max-width: 90%;
+            border-radius: 12px;
+            padding: 6px 20px 6px 20px;
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #7B61FF;
+            opacity: 0;
+            /* text-align: center; */
+        }
+
+        .alert.visible {
+            opacity: 100;
+            transition: .1s;
+            /* text-align: center; */
+        }
+
+        .notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-height: 60px;
+            width: 98%;
+            background-color: #B1A7FC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 18px;
+            color: #fff;
+            z-index: 1000;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .circle {
+            color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .inner-circle {
+            position: relative;
+            width: 41px;
+            height: 41px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 3px;
+        }
+
+        .inner-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            padding-bottom: 9px; /* Заполнить область внутреннего круга */
+        }
+    </style>
+</head>
+<body>
+<div><textarea id="logTextarea" style="width: 200px; height: 200px; display: none"></textarea></div>
+
+<div class="notification" id="notification">Ваше уведомление здесь</div>
+<div class="head-container">
+    <div id="opponent" class="player-info">
+        <div id="opponent_username" style="color: black;font-weight: bold;">{{ opponent_username }}</div>
+        <div id="opponent_elo">{{ opponent_elo }} ELO</div>
+    </div>
+    <div class="timer-container">
+        <div class="inner-circle">
+            <div class="circle" id="circle"></div>
+            <img src="/img/timer.png">
+        </div>
+        <div id="timer">00:30</div>
+        <button class="add-time-button disabled" onclick="addTime()">Взять доп время</button>
+    </div>
+    <div id="me" class="player-info">
+        <div style="color: black; font-weight: bold;">Вы</div>
+        <div>{{ elo }} ELO</div>
+    </div>
+</div>
+<div id="popup" class="alert">
+    <p style="text-align: center; color: white;">Вам поставили шах!</p>
+</div>
+<div id="myBoard" style="padding-top: 5%;padding-bottom: 15%"></div>
+<div class="bottom-buttons">
+    <button id="draw" class="bottom-button disabled" onclick="handleDraw()">
+        <img src="/img/nihca.png">
+    </button>
+    <button class="bottom-button disabled"
+            onclick="document.getElementById('modal_surrender').style.visibility = 'visible';">
+        <img src="/img/flag.png">
+    </button>
+</div>
+<div id="modal"
+     style="backdrop-filter: blur(3px);visibility: visible; position: fixed; z-index: 50; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+    <div style="border-radius: 10px; width: 80%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px;">
+        <article>
+            <h1 id="modal_text">Ожидайте подключения всех игроков</h1>
+            <div id ="circle_loading" class="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </article>
+    </div>
+</div>
+<div id="modal_end"
+     style="visibility: hidden; position: fixed; top: 0; left: 0; width: 100%;  z-index: 50; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+    <div style="border-radius: 10px; width: 80%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px;">
+        <article>
+            <h1 id="endgame">Игра окончена</h1>
+        </article>
+    </div>
+</div>
+<div id="modal_draw"
+     style="visibility: hidden; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+    <div style="border-radius: 10px; width: 80%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px;">
+        <article>
+            <h1>Противник предлагает ничью</h1>
+            <div style="display: flex;justify-content: center;gap: 10px;">
+                <button class="add-time-button" onclick="acceptDraw()">Да</button>
+                <button class="add-time-button"
+                        onclick="document.getElementById('modal_draw').style.visibility = 'hidden';">Нет
+                </button>
+            </div>
+        </article>
+    </div>
+</div>
+<div id="modal_surrender"
+     style="visibility: hidden; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+    <div style="border-radius: 10px; width: 80%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px;">
+        <article>
+            <h1>Вы точно хотите сдаться ?</h1>
+            <div style="display: flex;justify-content: center;gap: 10px;">
+                <button class="add-time-button" onclick="handleSurrender()">Да</button>
+                <button class="add-time-button"
+                        onclick="document.getElementById('modal_surrender').style.visibility = 'hidden';">Нет
+                </button>
+            </div>
+        </article>
+    </div>
+</div>
+</body>
+<script>
+
+    const game_id = '{{ game_id }}';
+    const side = '{{ side }}';
+
+    var board = null;
+    var boardContainer
+    var game
+    var timerInterval = null;
+
+    let remainingTime
+    let remainingAttempts
+    let circle = null;
+    let selectedPiece = false;
+    let websocketClient
+
+    const button = document.querySelector('.add-time-button');
+    const button_bottom = document.querySelectorAll('.bottom-button');
+    const opponentEloElement = document.getElementById("opponent_elo");
+    const opponentUsernameElement = document.getElementById("opponent_username");
+    const drawButton = document.getElementById('draw');
+    const timer = document.getElementById('timer')
+    const waiting_modal = document.getElementById('modal')
+    const modal_text = document.getElementById('modal_text')
+    var game_end = '{{ game_end }}'
+    console.log(game_end)
+    if (game_end === 'True'){
+        document.getElementById('circle_loading').remove()
+        modal_text.innerText = "Игра уже закончена!"
+        throw new Error('Игра завершена');
+    }
+    var config = {
+        pieceTheme: '/img/chesspieces/wikipedia/{piece}.png',
+        draggable: false,
+        position: 'start',
+        showErrors: 'console',
+    };
+    window.Telegram.WebApp.expand();
+    document.addEventListener('visibilitychange', function () {
+        // Проверяем, видима ли текущая вкладка
+        if (!document.hidden) {
+            // Обновляем страницу или выполняем другие действия
+            location.reload(); // Пример обновления страницы
+        }
+    });
+
+    const requestData = new FormData();
+    requestData.append("game_id", game_id);
+    requestData.append("side", side);
+    fetch("https://YOUR_DOMEN/get_opponent", {
+        method: "POST",
+        body: requestData,
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log(data)
+            // Обработка ответа от сервера
+            opponentEloElement.textContent = data.opponent_elo;
+            opponentUsernameElement.textContent = data.opponent_username;
+            remainingTime = 30
+            timer.innerText = "00:" + remainingTime;
+            remainingAttempts = data.remaining_attempts;
+            if (data.draw) {
+                drawButton.classList.add('disabled')
+            }
+            game = new Chess();
+            game.setTurn(data.turn);
+            createOrUpdateCircle(remainingTime)
+            highlightSide()
+
+            board = Chessboard('myBoard', config);
+            if (data.pgn !== null){
+                game.load_pgn(data.pgn)
+                board.position(game.fen())
+            }
+            boardContainer = document.getElementById('myBoard');
+            boardContainer.onclick = _on_move
+            if (side === 'b') {
+                board.flip();
+            }
+            websocketClient = new WebSocket("wss://chess32.xyz:443/wss/" + game_id + '/' + side);
+            websocketClient.onmessage = _on_message
+            websocketClient.onclose = _on_close
+
+        })
+        .catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+
+
+    function createOrUpdateCircle(value) {
+        circle = Circles.create({
+            id: 'circle',
+            radius: 20,
+            value: value,
+            maxValue: 30,
+            width: 19, // ширина обводки
+            colors: ['#fff', '#B1A7FC'], // цвета внутри и снаружи
+            duration: 0, // длительность анимации (в секундах)// длительность анимации (в секундах)
+        });
+    }
+
+    function showNotification(message, duration) {
+        notification.innerText = message;
+        notification.style.opacity = 1;
+
+        setTimeout(() => {
+            notification.style.opacity = 0;
+        }, duration);
+    }
+
+    function removeGreySquares() {
+        $('#myBoard .highlight').remove();
+    }
+
+    function highlightSide() {
+        document.getElementById('me').classList.remove("play")
+        document.getElementById('opponent').classList.remove("play")
+        if (game.turn() === side) {
+            document.getElementById('me').classList.add("play")
+        } else {
+            document.getElementById('opponent').classList.add("play")
+        }
+    }
+
+    function greySquare(square) {
+        var $square = $('#myBoard .square-' + square);
+        $square.append('<div class="highlight"></div>');
+    }
+
+    function onMouseoverSquare(square, piece) {
+        var moves = game.moves({
+            square: square,
+            verbose: true
+        });
+        if (moves.length === 0) return;
+        for (var i = 0; i < moves.length; i++) {
+            greySquare(moves[i].to);
+        }
+    }
+
+    function onMouseoutSquare(square, piece) {
+        removeGreySquares();
+    }
+
+    function updateTimer() {
+        remainingTime = 30;
+        createOrUpdateCircle(remainingTime)
+        document.getElementById('timer').innerText = "00:" + remainingTime;
+        highlightSide()
+        button.classList.add('disabled');
+        button_bottom.forEach(button => {
+            button.classList.add('disabled');
+        });
+    }
+
+    function switchTurn() {
+        highlightSide()
+        console.log("БЫЛО", game.turn())
+        game.setTurn(game.turn() === 'w' ? 'b' : 'w');
+        console.log("СТАЛО", game.turn())
+        board.position(game.fen())
+    }
+
+    function addTime() {
+        console.log("dhtvzsdfsdf")
+        if (remainingAttempts > 0) {
+            console.log("sdfsdfsdfsdf")
+            remainingAttempts--;
+            remainingTime += '{{ premium }}' === "true" ? 15 : 20;
+            websocketClient.send(JSON.stringify({
+                kind: "ADDTIME",
+                payload:{
+                    remaining_attempts: remainingAttempts,
+                    time: 15
+                }
+            }));
+        } else if (remainingAttempts === 0) {
+            console.log("dsdsfsdffffffffff")
+            button.classList.add('disabled');
+        }
+    }
+
+    function acceptDraw() {
+        document.getElementById('modal_draw').style.visibility = 'hidden';
+        websocketClient.send(JSON.stringify({
+            kind: "DRAW_ACCEPT"
+        }));
+    }
+
+    function handleDraw() {
+        // Обработка кнопки "Ничья"
+        websocketClient.send(JSON.stringify({
+            kind: "DRAW"
+        }));
+        document.getElementById('draw').disabled = true
+        showNotification('Предложение взять ничью отправлено!', 3000);
+
+    }
+
+    function handleSurrender() {
+        // Обработка кнопки "Сдаться"
+        document.getElementById('modal_surrender').style.visibility = 'hidden';
+        game_over(side === 'w' ? 'b' : 'w', true, "Игра окончена, вы сдались...");
+    }
+
+    function updateOpponentElo() {
+        const url = "https://YOUR_DOMEN/get_opponent"; // Замените на правильный URL вашего сервера
+        const requestData = new URLSearchParams();
+        requestData.append("game_id", game_id);
+        requestData.append("side", side);
+
+        fetch(url, {
+            method: "POST",
+            body: requestData,
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                // Обработка ответа от сервера
+                const opponentElo = data.opponent_elo;
+                const opponentUsername = data.opponent_username;
+                const opponentEloElement = document.getElementById("opponent_elo");
+                const opponentUsernameElement = document.getElementById("opponent_username");
+                opponentEloElement.textContent = opponentElo; // Обновляем содержимое дива
+                opponentUsernameElement.textContent = opponentUsername; // Обновляем содержимое дива
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+            });
+    }
+
+    // Вызовем функцию для обновления данных сразу после загрузки страницы
+    updateOpponentElo();
+
+    function game_over(result, ws, text) {
+        let winner_side = '';
+        if (result === 'draw') {
+            opponent_text = text
+            winner_side = 'nicha';
+        } else if (result === 'b' || result === 'w') {
+            winner_side = result;
+            opponent_text = "Игра окончена, вам поставили мат!"
+        }
+        if (text === "Игра окончена, вы сдались...") {
+            opponent_text = "Игра окончена, противник сдался!"
+        }
+        if (ws) {
+            websocketClient.send(JSON.stringify({
+                kind: "GAMEOVER",
+                payload:{
+                text_winner: "Вы победили!",
+                text_loser: opponent_text,
+                winner: winner_side
+                }
+
+            }))
+        }
+    }
+
+
+     function _on_message (message) {
+        let data = JSON.parse(message.data);
+        switch (data.kind) {
+            case 'DRAW':
+                document.getElementById('modal_draw').style.visibility = 'visible';
+                break;
+            case "GAMEOVER":
+                clearInterval(timerInterval);
+                createOrUpdateCircle(0);
+                document.getElementById('modal_end').style.visibility = 'visible';
+                var text;
+                if (side === data.payload.winner) {
+                    text = data.payload.text_winner;
+                } else {
+                    text = data.payload.text_loser;
+                }
+                document.getElementById('endgame').innerText = text;
+                break;
+            case "CHECK":
+                if (waiting_modal.style.visibility === 'hidden') {
+                    waiting_modal.style.visibility = 'visible';
+                }
+                break;
+            case "UPDATE":
+                if (waiting_modal.style.visibility === 'visible') {
+                    waiting_modal.style.visibility = 'hidden';
+                }
+                if (data.payload.pgn !== null){
+                game.load_pgn(data.payload.pgn)
+                board.position(game.fen())
+                }
+                game.setTurn(data.payload.turn.trim())
+                highlightSide()
+
+                if (data.payload.remainingTime !== 0 && game.turn() === side) {
+                    remainingTime = data.payload.remainingTime
+                    createOrUpdateCircle(remainingTime)
+                    document.getElementById('timer').innerText = "00:" + remainingTime;
+                    button.classList.remove('disabled');
+                    button_bottom.forEach(button => {
+                        button.classList.remove('disabled');
+                    })
+                } else if (data.payload.remainingTime <= 0) {
+                    updateTimer()
+                }
+                break;
+        }
+    };
+
+    function _on_close (event) {
+        if (!event.wasClean) {
+            websocketClient = new WebSocket("wss://chess32.xyz:443/wss/" + game_id + '/' + side);
+        }
+    }
+
+    function _on_move (event) {
+        var targetSquare = event.target.closest('.square-55d63');
+        if (!targetSquare) return;
+        var selected = targetSquare.dataset.square;
+        var piece = game.get(selected);
+        // or if it's not that side's turn
+        if (piece !== null && (game.turn() === side && piece.color === side)) {
+            onMouseoutSquare()
+            onMouseoverSquare(selected, piece)
+            selectedPiece = selected;
+        } else
+            var move;
+        if (selectedPiece !== null && piece === null || (game.turn() === side && piece.color !== side)) {
+            onMouseoutSquare();
+
+            move_data = {
+                from: selectedPiece,
+                to: selected,
+                promotion: 'q' // NOTE: always promote to a queen for example simplicity
+            };
+            move = game.move(move_data);
+            if (move === null) {return;}
+            // Если ход успешно создан
+
+            button.classList.add('disabled');
+            button_bottom.forEach(button => {
+                button.classList.add('disabled');
+            });
+            selectedPiece = null;
+            document.getElementById('popup').classList.remove("visible");
+            if (game.game_over()) {
+                game_over(side, true, "Игра окончена, вы победили!");
+            }
+            websocketClient.send(JSON.stringify({
+                kind: "MOVE",
+                payload:{
+                move: move,
+                pgn: game.pgn(),
+                check: game.in_check(),
+                turn: side,
+                san: move.san,}
+
+            }));
+
+            if (game.turn() === side) {
+                switchTurn()
+            }
+            highlightSide();
+            updateTimer();
+
+
+        }
+
+    };
+</script>
+
+</html>
