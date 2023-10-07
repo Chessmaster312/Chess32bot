@@ -51,7 +51,7 @@ To run the Chess32bot project, you will need the following:
    ```pip install -r requirements.txt```
 6. Configure your PostgreSQL database and update the `config.yaml` file with the necessary credentials for the database.
 7. Configure your web server (for example, Apache) to support HTTPS. Here is an example of Apache Virtual host configuration for HTTPS:
-``
+     ```
      <VirtualHost *:443>
         ServerName your_site
         ProxyPreserveHost On
@@ -67,8 +67,9 @@ To run the Chess32bot project, you will need the following:
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
         ErrorLog ${APACHE_LOG_DIR}/error.log
-CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>``
+       CustomLog ${APACHE_LOG_DIR}/access.log combined
+   </VirtualHost>
+
 ### Usage
 
 To use Chess32bot, you need to follow these steps:
